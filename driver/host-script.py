@@ -90,6 +90,7 @@ except:
 
 print("Done")
 
+'''
 while True:
     print("Sending report")
     try:
@@ -97,6 +98,7 @@ while True:
     except Exception as e:
         print("Failed to send report: {}".format(e))
     time.sleep(1)
+'''
 
 # This is needed to release interface, otherwise attach_kernel_driver fails
 # due to "Resource busy"
