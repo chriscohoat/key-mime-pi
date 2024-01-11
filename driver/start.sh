@@ -3,4 +3,4 @@
 message="Driver has been started?"
 logger "$message"
 
-/usr/bin/python3 /home/chris/key-mime-pi/driver/host-script.py
+/usr/bin/python3 /home/chris/key-mime-pi/driver/host-script.py 2>&1 | logger
