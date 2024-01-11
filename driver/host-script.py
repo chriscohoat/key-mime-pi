@@ -4,6 +4,16 @@
 
 import usb.core
 
+def hid_set_report(dev, report):
+      """ Implements HID SetReport via USB control transfer """
+      dev.ctrl_transfer(
+          0x21,  # REQUEST_TYPE_CLASS | RECIPIENT_INTERFACE | ENDPOINT_OUT
+          9,     # SET_REPORT
+          0x200, # "Vendor" Descriptor Type + 0 Descriptor Index
+          0,     # USB interface № 0
+          report # the HID payload as a byte array -- e.g. from struct.pack()
+      )
+
 GAMEPAD_REPORT_DESCRIPTOR = bytes((
     0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
     0x09, 0x05,  # Usage (Game Pad)
@@ -35,4 +45,21 @@ dev = usb.core.find(idVendor=0x1d6b, idProduct=0x0104)
 if dev is None:
     raise ValueError('Device not found')
 
+reattach = False
+if dev.is_kernel_driver_active(0):
+    reattach = True
+    dev.detach_kernel_driver(0)
+
 dev.set_configuration()
+
+# send the report
+
+hid_set_report(dev, GAMEPAD_REPORT_DESCRIPTOR)
+
+# This is needed to release interface, otherwise attach_kernel_driver fails
+# due to "Resource busy"
+usb.util.dispose_resources(dev)
+
+# It may raise USBError if there's e.g. no kernel driver loaded at all
+if reattach:
+    dev.attach_kernel_driver(0)
