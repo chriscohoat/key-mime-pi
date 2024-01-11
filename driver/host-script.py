@@ -13,7 +13,15 @@ def hid_set_report(dev, report):
           0,     # USB interface № 0
           report # the HID payload as a byte array -- e.g. from struct.pack()
       )
-
+def hid_get_report(dev):
+      """ Implements HID GetReport via USB control transfer """
+      return dev.ctrl_transfer(
+          0xA1,  # REQUEST_TYPE_CLASS | RECIPIENT_INTERFACE | ENDPOINT_IN
+          1,     # GET_REPORT
+          0x200, # "Vendor" Descriptor Type + 0 Descriptor Index
+          0,     # USB interface № 0
+          64     # max reply size
+      )
 GAMEPAD_REPORT_DESCRIPTOR = bytes((
     0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
     0x09, 0x05,  # Usage (Game Pad)
@@ -51,6 +59,14 @@ if dev.is_kernel_driver_active(0):
     dev.detach_kernel_driver(0)
 
 dev.set_configuration()
+
+# Gettting the report
+
+print("Getting report")
+
+report = hid_get_report(dev)
+
+print("Report: ", report)
 
 # send the report
 
