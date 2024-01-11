@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="1d6b", ATTRS{idProduct}=="0104", RUN+="/home/chris/key-mime-pi/driver/start.sh"

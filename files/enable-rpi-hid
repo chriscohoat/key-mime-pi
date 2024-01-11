@@ -14,6 +14,12 @@ cd /sys/kernel/config/usb_gadget/
 mkdir -p g1
 cd g1
 
+#
+# VIDs and PIDs are $5k for a license, so we'll use the test ones.
+# https://www.usb.org/getting-vendor-id
+# https://news.ycombinator.com/item?id=17288815
+#
+
 echo 0x1d6b > idVendor  # Linux Foundation
 echo 0x0104 > idProduct # Multifunction Composite Gadget
 echo 0x0100 > bcdDevice # v1.0.0
@@ -21,8 +27,8 @@ echo 0x0200 > bcdUSB    # USB2
 
 STRINGS_DIR="strings/0x409"
 mkdir -p "$STRINGS_DIR"
-echo "serialnumber" > "${STRINGS_DIR}/serialnumber"
-echo "manufacturer" > "${STRINGS_DIR}/manufacturer"
+echo "VirtualJoystick" > "${STRINGS_DIR}/serialnumber"
+echo "Morto" > "${STRINGS_DIR}/manufacturer"
 echo "Gamepad" > "${STRINGS_DIR}/product"
 
 FUNCTIONS_DIR="functions/hid.usb0"
