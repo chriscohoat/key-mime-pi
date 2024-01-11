@@ -13,6 +13,7 @@ def hid_set_report(dev, report):
           0,     # USB interface № 0
           report # the HID payload as a byte array -- e.g. from struct.pack()
       )
+
 def hid_get_report(dev):
       """ Implements HID GetReport via USB control transfer """
       return dev.ctrl_transfer(
@@ -22,6 +23,7 @@ def hid_get_report(dev):
           0,     # USB interface № 0
           64     # max reply size
       )
+
 GAMEPAD_REPORT_DESCRIPTOR = bytes((
     0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
     0x09, 0x05,  # Usage (Game Pad)
@@ -66,12 +68,19 @@ print("Getting report")
 
 report = hid_get_report(dev)
 
+# array('B', [0, 0, 0, 0, 0, 0])
+
 print("Report: ", report)
 
-# send the report
+# send  a simple 6 byte report back
 
-# hid_set_report(dev, GAMEPAD_REPORT_DESCRIPTOR)
+send_report = bytes((1, 2, 3, 4, 5, 6))
+
 print("Sending report")
+
+hid_set_report(dev, send_report)
+
+print("Done")
 
 # This is needed to release interface, otherwise attach_kernel_driver fails
 # due to "Resource busy"
