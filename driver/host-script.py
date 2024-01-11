@@ -4,36 +4,88 @@
 
 import usb.core
 
+def hid_set_report(dev, report):
+      """ Implements HID SetReport via USB control transfer """
+      dev.ctrl_transfer(
+          0x21,  # REQUEST_TYPE_CLASS | RECIPIENT_INTERFACE | ENDPOINT_OUT
+          9,     # SET_REPORT
+          0x200, # "Vendor" Descriptor Type + 0 Descriptor Index
+          0,     # USB interface № 0
+          report # the HID payload as a byte array -- e.g. from struct.pack()
+      )
+
+def hid_get_report(dev):
+      """ Implements HID GetReport via USB control transfer """
+      return dev.ctrl_transfer(
+          0xA1,  # REQUEST_TYPE_CLASS | RECIPIENT_INTERFACE | ENDPOINT_IN
+          1,     # GET_REPORT
+          0x200, # "Vendor" Descriptor Type + 0 Descriptor Index
+          0,     # USB interface № 0
+          64     # max reply size
+      )
+
+GAMEPAD_REPORT_DESCRIPTOR = bytes((
+    0x05, 0x01,  # Usage Page (Generic Desktop Ctrls)
+    0x09, 0x05,  # Usage (Game Pad)
+    0xA1, 0x01,  # Collection (Application)
+    0x85, 0x04,  #   Report ID (4)
+    0x05, 0x09,  #   Usage Page (Button)
+    0x19, 0x01,  #   Usage Minimum (Button 1)
+    0x29, 0x10,  #   Usage Maximum (Button 16)
+    0x15, 0x00,  #   Logical Minimum (0)
+    0x25, 0x01,  #   Logical Maximum (1)
+    0x75, 0x01,  #   Report Size (1)
+    0x95, 0x10,  #   Report Count (16)
+    0x81, 0x02,  #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0x05, 0x01,  #   Usage Page (Generic Desktop Ctrls)
+    0x15, 0x81,  #   Logical Minimum (-127)
+    0x25, 0x7F,  #   Logical Maximum (127)
+    0x09, 0x30,  #   Usage (X)
+    0x09, 0x31,  #   Usage (Y)
+    0x09, 0x32,  #   Usage (Z)
+    0x09, 0x35,  #   Usage (Rz)
+    0x75, 0x08,  #   Report Size (8)
+    0x95, 0x04,  #   Report Count (4)
+    0x81, 0x02,  #   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    0xC0,        # End Collection
+))
+
 dev = usb.core.find(idVendor=0x1d6b, idProduct=0x0104)
 
 if dev is None:
     raise ValueError('Device not found')
 
-try:
-    dev.reset()
-except Exception as e:
-    print( 'reset', e)
-
 reattach = False
 if dev.is_kernel_driver_active(0):
-    print( 'detaching kernel driver')
     reattach = True
     dev.detach_kernel_driver(0)
 
-print("Claiming device")
+dev.set_configuration()
 
-endpoint_in = dev[0][(0,0)][0]
-endpoint_out = dev[0][(0,0)][1]
+# Gettting the report
 
-# Send a command to the Teensy
-endpoint_out.write( "version".encode() + bytes([0]) )
+print("Getting report")
 
-# Read the response, an array of byte, .tobytes() gives us a bytearray.
-buffer = dev.read(endpoint_in.bEndpointAddress, 64, 1000).tobytes()
+report = hid_get_report(dev)
 
-# Decode and print the zero terminated string response
-n = buffer.index(0)
-print( buffer[:n].decode() )
+# array('B', [0, 0, 0, 0, 0, 0])
+
+print("Report: ", report)
+
+# send  a simple 6 byte report back
+
+send_report = bytes((1, 2, 3, 4, 5, 6))
+# data=[0x00, 0x04, 0x04, 0xFF, 0xFF, 0xFF, 0x00, 0x00]
+
+print("Sending report")
+
+try:
+
+    hid_set_report(dev, send_report)
+
+except:
+         
+    print("Failed to send report")
 
 print("Done")
 
