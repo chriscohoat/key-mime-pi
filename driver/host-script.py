@@ -54,7 +54,8 @@ dev.set_configuration()
 
 # send the report
 
-hid_set_report(dev, GAMEPAD_REPORT_DESCRIPTOR)
+# hid_set_report(dev, GAMEPAD_REPORT_DESCRIPTOR)
+print("Sending report")
 
 # This is needed to release interface, otherwise attach_kernel_driver fails
 # due to "Resource busy"
@@ -62,4 +63,5 @@ usb.util.dispose_resources(dev)
 
 # It may raise USBError if there's e.g. no kernel driver loaded at all
 if reattach:
+    print("Reattaching kernel driver")
     dev.attach_kernel_driver(0)
