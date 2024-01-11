@@ -21,18 +21,20 @@ echo 0x0200 > bcdUSB    # USB2
 
 STRINGS_DIR="strings/0x409"
 mkdir -p "$STRINGS_DIR"
-echo "6b65796d696d6570690" > "${STRINGS_DIR}/serialnumber"
-echo "keymimepi" > "${STRINGS_DIR}/manufacturer"
-echo "Generic USB Keyboard" > "${STRINGS_DIR}/product"
+echo "serialnumber" > "${STRINGS_DIR}/serialnumber"
+echo "manufacturer" > "${STRINGS_DIR}/manufacturer"
+echo "Gamepad" > "${STRINGS_DIR}/product"
 
 FUNCTIONS_DIR="functions/hid.usb0"
 mkdir -p "$FUNCTIONS_DIR"
-echo 1 > "${FUNCTIONS_DIR}/protocol" # Keyboard
+echo 0 > "${FUNCTIONS_DIR}/protocol" # Gamepad
 echo 0 > "${FUNCTIONS_DIR}/subclass" # No subclass
-echo 8 > "${FUNCTIONS_DIR}/report_length"
+echo 6 > "${FUNCTIONS_DIR}/report_length" # Report length for gamepad
+
 # Write the report descriptor
 # Source: https://www.kernel.org/doc/html/latest/usb/gadget_hid.html
-echo -ne \\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0 > "${FUNCTIONS_DIR}/report_desc"
+# Write the gamepad report descriptor (converted from https://learn.adafruit.com/custom-hid-devices-in-circuitpython/report-descriptors d)
+echo -ne \\x05\\x01\\x09\\x05\\xA1\\x01\\x85\\x04\\x05\\x09\\x19\\x01\\x29\\x10\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x10\\x81\\x02\\x05\\x01\\x15\\x81\\x25\\x7F\\x09\\x30\\x09\\x31\\x09\\x32\\x09\\x35\\x75\\x08\\x95\\x04\\x81\\x02\\xC0 > "${FUNCTIONS_DIR}/report_desc"
 
 CONFIG_INDEX=1
 CONFIGS_DIR="configs/c.${CONFIG_INDEX}"
@@ -41,7 +43,7 @@ echo 250 > "${CONFIGS_DIR}/MaxPower"
 
 CONFIGS_STRINGS_DIR="${CONFIGS_DIR}/strings/0x409"
 mkdir -p "$CONFIGS_STRINGS_DIR"
-echo "Config ${CONFIG_INDEX}: ECM network" > "${CONFIGS_STRINGS_DIR}/configuration"
+echo "Config ${CONFIG_INDEX}: Gamepad" > "${CONFIGS_STRINGS_DIR}/configuration"
 
 ln -s "$FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 ls /sys/class/udc > UDC
